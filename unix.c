@@ -165,6 +165,7 @@ static int fill_ipv4(
     struct sockaddr_in *addr, unsigned int ip, unsigned int port)
 {
     memset(addr, 0, sizeof(*addr));
+    addr->sin_len = sizeof(*addr);
     addr->sin_family = AF_INET;
     addr->sin_port = htons(port);
     addr->sin_addr.s_addr = htonl(ip);
