@@ -16,10 +16,11 @@ static void panic_errno(const char *which) {
 }
 
 static void do_readlink(const char *path) {
-  char *link = unix_readlink(path);
-  if (!link)
+  char *link;
+  if (unix_readlink(path, &link) == -1)
     panic_errno("readlink");
   printf("%s\n", link);
+  free(link);
 }
 
 int main(int argc, char **argv) {
@@ -33,7 +34,6 @@ int main(int argc, char **argv) {
       usage();
     do_readlink(argv[2]);
   } else {
-
     usage();
   }
 }
