@@ -15,6 +15,14 @@ static void panic_errno(const char *which) {
   exit(2);
 }
 
+static void do_getcwd(void) {
+  char *dir;
+  if (unix_getcwd(&dir) == -1)
+    panic_errno("getcwd");
+  printf("%s\n", dir);
+  free(dir);
+}
+
 static void do_readlink(const char *path) {
   char *link;
   if (unix_readlink(path, &link) == -1)
@@ -29,7 +37,11 @@ int main(int argc, char **argv) {
   if (argc < 2)
     usage();
   which = argv[1];
-  if (!strcmp(which, "readlink")) {
+  if (!strcmp(which, "getcwd")) {
+    if (argc != 2)
+      usage();
+    do_getcwd();
+  } else if (!strcmp(which, "readlink")) {
     if (argc != 3)
       usage();
     do_readlink(argv[2]);

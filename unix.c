@@ -35,6 +35,31 @@ int unix_write(int fd, char *buf, size_t cap, size_t *out) {
   return 0;
 }
 
+int unix_getcwd(char **out) {
+  char *buf;
+  char *newbuf;
+  size_t cap;
+  int err;
+
+  buf = 0;
+  for (cap = 64; cap != 0; cap *= 2) {
+    if (!(newbuf = realloc(buf, cap)))
+      break;
+    buf = newbuf;
+    if (getcwd(buf, cap)) {
+      *out = buf;
+      return 0;
+    }
+    if (errno != ERANGE)
+      break;
+  }
+  err = errno;
+  free(buf);
+  errno = err;
+  *out = 0;
+  return -1;
+}
+
 int unix_readlink(const char *path, char **out) {
   char *buf;
   char *newbuf;
