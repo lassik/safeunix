@@ -35,6 +35,44 @@ int unix_write(int fd, char *buf, size_t cap, size_t *out) {
   return 0;
 }
 
+int unix_getgroups(gid_t **out_gids, size_t *out_ngid) {
+  gid_t *gids;
+  gid_t *newgids;
+  gid_t egid;
+  size_t cap, i;
+  int ngid, has_egid;
+
+  egid = getegid();
+  gids = 0;
+  for (cap = 8 * sizeof(gid_t); cap <= 256 * sizeof(gid_t); cap *= 2) {
+    if (!(newgids = realloc(gids, cap)))
+      break;
+    gids = newgids;
+    ngid = getgroups((int)(cap / sizeof(gid_t)), gids);
+    if (ngid >= 0) {
+      i = has_egid = 0;
+      while (i < (size_t)ngid) {
+        if (gids[i++] == egid)
+          has_egid = 1;
+      }
+      if (!has_egid) {
+        if (i == cap / sizeof(gid_t))
+          continue;
+        gids[i++] = egid;
+        ngid++;
+      }
+      while (i < cap / sizeof(gid_t))
+        gids[i++] = (gid_t)-1;
+      *out_gids = gids;
+      *out_ngid = (size_t)ngid;
+      return 0;
+    }
+  }
+  *out_gids = 0;
+  *out_ngid = 0;
+  return -1;
+}
+
 int unix_getcwd(char **out) {
   char *buf;
   char *newbuf;

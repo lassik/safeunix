@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "unix.h"
 
@@ -13,6 +14,20 @@ static void usage(void) {
 static void panic_errno(const char *which) {
   fprintf(stderr, "%s: %s\n", which, strerror(errno));
   exit(2);
+}
+
+static void do_getgroups(void) {
+  gid_t *gids;
+  size_t ngid, i;
+
+  if (unix_getgroups(&gids, &ngid) == -1)
+    panic_errno("getcwd");
+  i = 0;
+  while (i < ngid - 1) {
+      printf("%ld ", (long)gids[i++]);
+  }
+  printf("%ld\n", (long)gids[i]);
+  free(gids);
 }
 
 static void do_getcwd(void) {
@@ -37,7 +52,11 @@ int main(int argc, char **argv) {
   if (argc < 2)
     usage();
   which = argv[1];
-  if (!strcmp(which, "getcwd")) {
+  if (!strcmp(which, "getgroups")) {
+    if (argc != 2)
+      usage();
+    do_getgroups();
+  } else if (!strcmp(which, "getcwd")) {
     if (argc != 2)
       usage();
     do_getcwd();
