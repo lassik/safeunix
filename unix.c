@@ -1,3 +1,6 @@
+// Copyright 2020 Lassi Kortela
+// SPDX-License-Identifier: ISC
+
 #include <sys/socket.h>
 
 #include <netinet/in.h>
