@@ -137,11 +137,17 @@ int unix_readlink(const char *path, char **out)
 
 static int valid_name(const char *s)
 {
-    for (; *s; s++) {
-        if (*s != '.')
-            return 1;
-    }
-    return 0;
+    if (!*s)
+        return 0;
+    if (*s++ != '.')
+        return 1;
+    if (!*s)
+        return 0;
+    if (*s++ != '.')
+        return 1;
+    if (!*s)
+        return 0;
+    return 1;
 }
 
 int unix_readdir(DIR *handle, struct dirent *out)
