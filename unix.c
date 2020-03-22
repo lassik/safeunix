@@ -5,6 +5,7 @@
 
 #include <netinet/in.h>
 
+#include <dirent.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -131,6 +132,33 @@ int unix_readlink(const char *path, char **out)
     errno = err;
     *out = 0;
     return -1;
+}
+
+static int valid_name(const char *s)
+{
+    for (; *s; s++) {
+        if (*s != '.')
+            return 1;
+    }
+    return 0;
+}
+
+int unix_readdir(DIR *handle, struct dirent *out)
+{
+    struct dirent *remaining;
+    int failed;
+
+    for (;;) {
+        failed = readdir_r(handle, out, &remaining);
+        if (failed || !remaining) {
+            memset(out, 0, sizeof(*out));
+            if (!failed)
+                errno = 0;
+            return -1;
+        }
+        if (valid_name(out->d_name))
+            return 0;
+    }
 }
 
 static int fill_ipv4(

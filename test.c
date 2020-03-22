@@ -1,6 +1,7 @@
 // Copyright 2020 Lassi Kortela
 // SPDX-License-Identifier: ISC
 
+#include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +55,21 @@ static void do_readlink(const char *path)
     free(link);
 }
 
+static void do_readdir(const char *path)
+{
+    DIR *handle;
+    struct dirent d;
+
+    if (!(handle = opendir(path)))
+        panic_errno("opendir");
+    while (unix_readdir(handle, &d) != -1)
+        printf("%s\n", d.d_name);
+    if (errno)
+        panic_errno("readdir");
+    if (closedir(handle) == -1)
+        panic_errno("closedir");
+}
+
 int main(int argc, char **argv)
 {
     const char *which;
@@ -73,6 +89,10 @@ int main(int argc, char **argv)
         if (argc != 3)
             usage();
         do_readlink(argv[2]);
+    } else if (!strcmp(which, "readdir")) {
+        if (argc != 3)
+            usage();
+        do_readdir(argv[2]);
     } else {
         usage();
     }
