@@ -6,3 +6,5 @@ int unix_readlink(const char *path, char **out);
 int unix_readdir(DIR *handle, struct dirent *out);
 int unix_bind_ipv4(int fd, unsigned int ip, unsigned int port);
 int unix_connect_ipv4(int fd, unsigned int ip, unsigned int port);
+int unix_bind_ipv6(int fd, unsigned char ip[16], unsigned int port);
+int unix_connect_ipv6(int fd, unsigned char ip[16], unsigned int port);

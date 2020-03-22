@@ -189,3 +189,32 @@ int unix_connect_ipv4(int fd, unsigned int ip, unsigned int port)
         return -1;
     return connect(fd, (struct sockaddr *)&addr, sizeof(addr));
 }
+
+static int fill_ipv6(
+    struct sockaddr_in6 *addr, unsigned char ip[16], unsigned int port)
+{
+    memset(addr, 0, sizeof(*addr));
+    addr->sin6_len = sizeof(*addr);
+    addr->sin6_family = AF_INET6;
+    addr->sin6_port = htons(port);
+    memcpy(&addr->sin6_addr, ip, sizeof(addr->sin6_addr));
+    return 0;
+}
+
+int unix_bind_ipv6(int fd, unsigned char ip[16], unsigned int port)
+{
+    struct sockaddr_in6 addr;
+
+    if (fill_ipv6(&addr, ip, port) == -1)
+        return -1;
+    return bind(fd, (struct sockaddr *)&addr, sizeof(addr));
+}
+
+int unix_connect_ipv6(int fd, unsigned char ip[16], unsigned int port)
+{
+    struct sockaddr_in6 addr;
+
+    if (fill_ipv6(&addr, ip, port) == -1)
+        return -1;
+    return connect(fd, (struct sockaddr *)&addr, sizeof(addr));
+}
