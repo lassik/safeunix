@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 
 #include <netinet/in.h>
+#include <sys/un.h>
 
 #include <dirent.h>
 #include <errno.h>
@@ -159,6 +160,40 @@ int unix_readdir(DIR *handle, struct dirent *out)
         if (valid_name(out->d_name))
             return 0;
     }
+}
+
+static int fill_local(struct sockaddr_un *addr, const char *path)
+{
+    size_t pathsize;
+
+    pathsize = strlen(path) + 1;
+    if (pathsize > sizeof(addr->sun_path)) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    memset(addr, 0, sizeof(*addr));
+    addr->sun_len = sizeof(*addr);
+    addr->sun_family = AF_UNIX;
+    memcpy(addr->sun_path, path, pathsize);
+    return 0;
+}
+
+int unix_bind_local(int fd, const char *path)
+{
+    struct sockaddr_un addr;
+
+    if (fill_local(&addr, path) == -1)
+        return -1;
+    return bind(fd, (struct sockaddr *)&addr, sizeof(addr));
+}
+
+int unix_connect_local(int fd, const char *path)
+{
+    struct sockaddr_un addr;
+
+    if (fill_local(&addr, path) == -1)
+        return -1;
+    return connect(fd, (struct sockaddr *)&addr, sizeof(addr));
 }
 
 static int fill_ipv4(
